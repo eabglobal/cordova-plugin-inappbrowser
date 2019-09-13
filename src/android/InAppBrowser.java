@@ -63,6 +63,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.app.Activity;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.Config;
@@ -533,9 +534,18 @@ public class InAppBrowser extends CordovaPlugin {
                 childView.setWebViewClient(new WebViewClient() {
                     // NB: wait for about:blank before dismissing
                     public void onPageFinished(WebView view, String url) {
-                        if (dialog != null) {
-                            dialog.dismiss();
-                            dialog = null;
+                        Context context = view.getContext();
+
+                        if(dialog == null || !dialog.isShowing()){
+                            return;
+                        }
+
+                        if(context instanceof Activity) {
+                            if(!((Activity)context).isFinishing()) {
+                                dismissBrowserDialog();
+                            }
+                        } else {
+                            dismissBrowserDialog();
                         }
                     }
                 });
@@ -586,6 +596,15 @@ public class InAppBrowser extends CordovaPlugin {
     private void goForward() {
         if (this.inAppWebView.canGoForward()) {
             this.inAppWebView.goForward();
+        }
+    }
+
+    private void dismissBrowserDialog() {
+        try {
+            dialog.dismiss();
+            dialog = null;
+        } catch (Exception e) {
+            LOG.e(LOG_TAG, "Root Activity destroyed before dismiss.");
         }
     }
 
