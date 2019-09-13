@@ -534,8 +534,12 @@ public class InAppBrowser extends CordovaPlugin {
                     // NB: wait for about:blank before dismissing
                     public void onPageFinished(WebView view, String url) {
                         if (dialog != null) {
-                            dialog.dismiss();
-                            dialog = null;
+                            try {
+                                dialog.dismiss();
+                                dialog = null;
+                            } catch (Exception e) {
+                                LOG.e(LOG_TAG, "Root Activity destroyed before dismiss.");
+                            }
                         }
                     }
                 });
